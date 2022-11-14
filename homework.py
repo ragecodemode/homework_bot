@@ -36,7 +36,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message: str) -> None:
-    """отправляет сообщение в Telegram чат"""
+    """отправляет сообщение в Telegram чат."""
     try:
         logging.info('Отправка сообщения в телеграмм чат')
         bot.send_message(
@@ -95,9 +95,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """
-    Извлекает из информации о конкретной домашней работе статус этой работы.
-    """
+    """Извлекает из информации о домашней работе статус этой работы."""
     if homework.get('homework_name') is None:
         message = 'Не указано имя домашней работы'
         logging.error(message)
