@@ -102,7 +102,7 @@ def parse_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
-        message = 'Недокументированный статус домашней работы'
+        message = 'Не верный статус домашней работы'
         logger.error(message)
         raise KeyError(message)
     verdict = HOMEWORK_STATUSES[homework_status]
