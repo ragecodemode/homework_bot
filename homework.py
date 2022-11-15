@@ -61,9 +61,9 @@ def get_api_answer(current_timestamp: int):
     except Exception as error:
         message = f'Сбой запроса к эндпоинту {error}'
         logging.ERROR(message)
-    homewor_status = homework.status_code
-    if homewor_status != HTTPStatus.OK:
-        message = f'API не доступен {homewor_status}'
+    # homewor_status = homework.status_code
+    if homework.status_code != HTTPStatus.OK:
+        message = f'API не доступен {homework.status_code}'
         logger.error(message)
     try:
         homework_json = homework.json()
