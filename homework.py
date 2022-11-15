@@ -60,8 +60,7 @@ def get_api_answer(current_timestamp: int):
         )
     except Exception as error:
         message = f'Сбой запроса к эндпоинту {error}'
-        logging.ERROR(message)
-    # homewor_status = homework.status_code
+        logging.error(message)
     if homework.status_code != HTTPStatus.OK:
         message = f'API не доступен {homework.status_code}'
         logger.error(message)
@@ -96,16 +95,12 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-    if homework.get('homework_name') is None:
-        message = 'Не указано имя домашней работы'
-        logging.error(message)
-        raise KeyError(message)
-    homework_name = homework.get('homework_name', 'Hmework_name')
-    if homework.get('status') not in HOMEWORK_STATUSES:
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_status not in HOMEWORK_STATUSES:
         message = 'Не известый статус'
         logging.error(message)
         raise KeyError(message)
-    homework_status = homework.get('status')
     verdict = HOMEWORK_STATUSES.get(homework_status)
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
