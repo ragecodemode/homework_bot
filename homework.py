@@ -99,12 +99,16 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-    homework_name = homework.get('homework_name')
-    homework_status = homework.get('status')
-    if homework_status not in HOMEWORK_STATUSES:
-        message = 'Не известый статус'
-        logging.error(message)
+    if homework.get('homework_name') is None:
+        message = 'Отсутствует имя домашней работы'
+        logger.error(message)
         raise KeyError(message)
+    homework_name = homework.get('homework_name', 'Homework_no_name')
+    if homework.get('status') not in HOMEWORK_STATUSES:
+        message = ('Не известый статус домашней работы')
+        logger.error(message)
+        raise ValueError(message)
+    homework_status = homework.get('status')
     verdict = HOMEWORK_STATUSES.get(homework_status)
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
