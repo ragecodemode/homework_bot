@@ -52,23 +52,12 @@ def get_api_answer(current_timestamp: int):
     """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    try:
-        homework = requests.get(
-            url=ENDPOINT,
-            headers=HEADERS,
-            params=params
-        )
-    except Exception as error:
-        message = f'Сбой запроса к эндпоинту {error}'
-        logging.error(message)
-    if homework.status_code != HTTPStatus.OK:
-        message = f'API не доступен {homework.status_code}'
+    homework_status = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    homework_json = homework_status.json()
+    if homework_status.homewor_status != HTTPStatus.OK:
+        message = f'Эндпоинт {ENDPOINT} недоступен'
         logger.error(message)
-    try:
-        homework_json = homework.json()
-    except Exception as error:
-        message = f'Сбой формата json: {error}'
-        logger.error(message)
+        raise ValueError(message)
     return homework_json
 
 
