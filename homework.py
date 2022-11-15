@@ -111,6 +111,7 @@ def parse_status(homework):
 
 
 def check_tokens():
+    """Проверяет доступность переменных окружения."""
     tokens = [
         PRACTICUM_TOKEN,
         TELEGRAM_TOKEN,
