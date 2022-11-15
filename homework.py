@@ -48,29 +48,29 @@ def send_message(bot, message: str) -> None:
         logging.error(f'Сообщение {message} об ошибки: {error}')
 
 
-def get_api_answer(current_timestamp: int):
+def get_api_answer(current_timestamp):
     """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
         homework = requests.get(
-            enpoint=ENDPOINT,
+            url=ENDPOINT,
             headers=HEADERS,
             params=params
         )
-    except requests.exceptions.RequestException as error:
+    except Exception as error:
         message = f'Сбой при запросе к эндпоинту: {error}'
         logger.error(message)
         raise ValueError(message)
-    homework_status = homework.status_code
-    if homework_status != HTTPStatus.OK:
-        message = f'Yandex API недоступен, код ошибки: {homework_status}'
+    status_code = homework.status_code
+    if status_code != HTTPStatus.OK:
+        message = f'Код ошибки: {status_code}'
         logger.error(message)
         raise ValueError(message)
     try:
         homework_json = homework.json()
     except Exception as error:
-        message = f'Сбой при переводе в формат json: {error}'
+        message = f'Сбой формата json: {error}'
         logger.error(message)
         raise ValueError(message)
     return homework_json
@@ -99,17 +99,13 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-    if homework.get('homework_name') is None:
-        message = 'Отсутствует имя домашней работы'
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_status not in HOMEWORK_STATUSES:
+        message = 'Недокументированный статус домашней работы'
         logger.error(message)
         raise KeyError(message)
-    homework_name = homework.get('homework_name', 'Homework_no_name')
-    if homework.get('status') not in HOMEWORK_STATUSES:
-        message = ('Не известый статус домашней работы')
-        logger.error(message)
-        raise ValueError(message)
-    homework_status = homework.get('status')
-    verdict = HOMEWORK_STATUSES.get(homework_status)
+    verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
