@@ -24,12 +24,6 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-TOKENS = {
-    PRACTICUM_TOKEN,
-    TELEGRAM_TOKEN,
-    TELEGRAM_CHAT_ID
-}
-
 
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
@@ -93,7 +87,7 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    tokens = globals([TOKENS])
+    tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
     return tokens
 
 
