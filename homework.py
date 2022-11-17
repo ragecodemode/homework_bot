@@ -24,9 +24,16 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+TOKENS = {
+    PRACTICUM_TOKEN,
+    TELEGRAM_TOKEN,
+    TELEGRAM_CHAT_ID
+}
+
+
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
-    logging.info('Отправка сообщения в телеграмм чат')
+    logger.info('Отправка сообщения в телеграмм чат')
     try:
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
@@ -35,7 +42,7 @@ def send_message(bot, message: str) -> None:
     except Exception as error:
         logger.error(f'Сообщение {message} об ошибки: {error}')
     else:
-        logging.info(f'Собщение {message} было отправлено')
+        logger.info(f'Собщение {message} было отправлено')
 
 
 def get_api_answer(current_timestamp):
@@ -86,7 +93,7 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    tokens = globals([TOKENS])
     return tokens
 
 
