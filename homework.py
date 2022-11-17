@@ -1,11 +1,10 @@
 import logging
 import os
-import requests
 import time
-import telegram
-
 from http import HTTPStatus
 
+import telegram
+import requests
 from dotenv import load_dotenv
 
 from logging.handlers import RotatingFileHandler
@@ -63,7 +62,7 @@ def check_response(response):
     if type(response) != dict:
         response_type = type(response)
         message = f'Ответ пришёл в неверном формате: {response_type}'
-        logging.error(message)
+        logger.error(message)
         raise ValueError(message)
     if 'current_date' and 'homeworks' not in response:
         message = 'Не найдено верных ключей'
@@ -87,17 +86,8 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    tokens = [
-        PRACTICUM_TOKEN,
-        TELEGRAM_TOKEN,
-        TELEGRAM_CHAT_ID
-    ]
-    for token in tokens:
-        if token is None:
-            message = f'Переменные окружения не найдены {token}'
-            logging.critical(message)
-            return False
-    return True
+    tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    return tokens
 
 
 def main():
@@ -118,7 +108,7 @@ def main():
 
     if not check_tokens():
         message = 'Отсутствует обязательная переменная окружения'
-        logging.critical(message)
+        logger.critical(message)
         raise ValueError(message)
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     send_message(bot, 'Бот начал работу')
