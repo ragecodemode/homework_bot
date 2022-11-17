@@ -34,7 +34,7 @@ def send_message(bot, message: str) -> None:
             text=message
         )
     except Exception as error:
-        logging.error(f'Сообщение {message} об ошибки: {error}')
+        logger.error(f'Сообщение {message} об ошибки: {error}')
     else:
         logging.info(f'Собщение {message} было отправлено')
 
@@ -79,7 +79,7 @@ def parse_status(homework):
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
         message = 'Не верный статус домашней работы'
-        logger.error(message)
+        logging.error(message)
         raise KeyError(message)
     verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
