@@ -55,7 +55,8 @@ def get_api_answer(current_timestamp):
         )
     homework_json = homework.json()
     if homework.status_code != HTTPStatus.OK:
-        logger.error(f'Эндпоинт {ENDPOINT} недоступен, код ошибки: {homework.status_code}'
+        logger.error(f'Эндпоинт {ENDPOINT} недоступен'
+                     f'код ошибки: {homework.status_code}'
                      f'заголовок: {HEADERS}, параметр {params}')
         raise ValueError(f'Сервер {ENDPOINT} недоступен.')
     return homework_json
@@ -64,7 +65,7 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response['homeworks'], list):
-        message ='Неккоректное значение в ответе у домашней работы'
+        message = 'Неккоректное значение в ответе у домашней работы'
         logging.info(message)
         raise ValueError(message)
     if type(response) != dict:
