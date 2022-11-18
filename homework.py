@@ -29,6 +29,7 @@ TOKENS = [
     TELEGRAM_CHAT_ID
 ]
 
+
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
     logger.info('Отправка сообщения в телеграмм чат')
@@ -63,7 +64,8 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response['homeworks'], list):
-        logging.info('Неккоректное значение в ответе у домашней работы')
+        message ='Неккоректное значение в ответе у домашней работы'
+        logging.info(message)
         raise ValueError(message)
     if type(response) != dict:
         response_type = type(response)
@@ -109,7 +111,11 @@ def main():
     )
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    handler = RotatingFileHandler('my_logger.log', maxBytes=50000000, backupCount=5),
+    handler = RotatingFileHandler(
+        'my_logger.log',
+        maxBytes=50000000,
+        backupCount=5
+    ),
     logger.addHandler(handler)
 
     if not check_tokens():
