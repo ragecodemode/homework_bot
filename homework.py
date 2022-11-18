@@ -114,12 +114,12 @@ def main():
     )
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    handler.setFormatter(formatter)
     handler = RotatingFileHandler(
         'my_logger.log',
         maxBytes=50000000,
         backupCount=5
-    ),
+    )
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     if not check_tokens():
