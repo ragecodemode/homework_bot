@@ -49,10 +49,10 @@ def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     homework = requests.get(
-            url=ENDPOINT,
-            headers=HEADERS,
-            params=params
-        )
+        url=ENDPOINT,
+        headers=HEADERS,
+        params=params
+    )
     homework_json = homework.json()
     if homework.status_code != HTTPStatus.OK:
         logger.error(f'Эндпоинт {ENDPOINT} недоступен'
@@ -107,11 +107,14 @@ def main():
     logging.basicConfig(
         level=logging.DEBUG,
         filename='program.log',
-        filemode='a',
-        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
+        filemode='a'
+    )
+    formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
     handler = RotatingFileHandler(
         'my_logger.log',
         maxBytes=50000000,
