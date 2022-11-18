@@ -23,7 +23,11 @@ HOMEWORK_STATUSES = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
-TOKENS = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
+TOKENS = [
+    PRACTICUM_TOKEN,
+    TELEGRAM_TOKEN,
+    TELEGRAM_CHAT_ID
+]
 
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
@@ -50,7 +54,8 @@ def get_api_answer(current_timestamp):
         )
     homework_json = homework.json()
     if homework.status_code != HTTPStatus.OK:
-        logger.error(f'Эндпоинт {ENDPOINT} недоступен, код ошибки {homework.status_code}')
+        logger.error(f'Эндпоинт {ENDPOINT} недоступен, код ошибки: {homework.status_code}'
+                     f'заголовок: {HEADERS}, параметр {params}')
         raise ValueError(f'Сервер {ENDPOINT} недоступен.')
     return homework_json
 
