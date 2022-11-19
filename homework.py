@@ -39,10 +39,9 @@ def send_message(bot, message: str) -> None:
         logger.info(f'Собщение {message} было отправлено')
 
 
-def get_api_answer(current_timestamp):
+def get_api_answer(current_timestamp: int) -> int:
     """Делает запрос к единственному эндпоинту API-сервиса."""
-    timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp}
+    params = {'from_date': current_timestamp}
     try:
         homework = requests.get(
             url=ENDPOINT,
@@ -50,12 +49,11 @@ def get_api_answer(current_timestamp):
             params=params
         )
     except requests.exceptions.RequestException as error:
-        message = f'Сбой при запросе к эндпоинту: {error}'
+        message = f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}'
         logger.error(message)
         raise ValueError(message)
     if homework.status_code != HTTPStatus.OK:
         logger.error(
-            f'Эндпоинт {ENDPOINT} недоступен'
             f'код ошибки: {homework.status_code}'
             f'заголовок: {HEADERS}, параметр {params}'
         )
