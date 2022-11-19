@@ -55,9 +55,11 @@ def get_api_answer(current_timestamp):
     )
     homework_json = homework.json()
     if homework.status_code != HTTPStatus.OK:
-        logger.error(f'Эндпоинт {ENDPOINT} недоступен'
-                     f'код ошибки: {homework.status_code}'
-                     f'заголовок: {HEADERS}, параметр {params}')
+        logger.error(
+            f'Эндпоинт {ENDPOINT} недоступен'
+            f'код ошибки: {homework.status_code}'
+            f'заголовок: {HEADERS}, параметр {params}'
+        )
         raise ValueError(f'Сервер {ENDPOINT} недоступен.')
     return homework_json
 
