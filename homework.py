@@ -69,7 +69,7 @@ def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response['homeworks'], list):
         message = (
-            f'Неккоректное значение в ответе у домашней работы {type(response)},' 
+            f'Неккоректное значение в ответе домашней работы {type(response)}'
             f'ожидали: {list(response)}'
         )
         logging.info(message)
