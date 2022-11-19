@@ -23,11 +23,6 @@ HOMEWORK_STATUSES = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
-TOKENS = [
-    PRACTICUM_TOKEN,
-    TELEGRAM_TOKEN,
-    TELEGRAM_CHAT_ID
-]
 
 
 def send_message(bot, message: str) -> None:
@@ -48,12 +43,16 @@ def get_api_answer(current_timestamp):
     """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    homework = requests.get(
-        url=ENDPOINT,
-        headers=HEADERS,
-        params=params
-    )
-    homework_json = homework.json()
+    try:
+        homework = requests.get(
+            url=ENDPOINT,
+            headers=HEADERS,
+            params=params
+        )
+    except requests.exceptions.RequestException as error:
+        message = f'Сбой при запросе к эндпоинту: {error}'
+        logger.error(message)
+        raise ValueError(message)
     if homework.status_code != HTTPStatus.OK:
         logger.error(
             f'Эндпоинт {ENDPOINT} недоступен'
@@ -61,24 +60,31 @@ def get_api_answer(current_timestamp):
             f'заголовок: {HEADERS}, параметр {params}'
         )
         raise ValueError(f'Сервер {ENDPOINT} недоступен.')
+    try:
+        homework_json = homework.json()
+    except Exception as error:
+        message = f'Сбой при переводе в формат json: {error}'
+        logger.error(message)
+        raise ValueError(message)
     return homework_json
 
 
 def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response['homeworks'], list):
-        message = 'Неккоректное значение в ответе у домашней работы'
+        response_type = type(homework)
+        message = f'Неккоректное значение в ответе у домашней работы {response_type}'
         logging.info(message)
         raise ValueError(message)
     if type(response) != dict:
         response_type = type(response)
         message = f'Ответ пришёл в неверном формате: {response_type}'
         logger.error(message)
-        raise ValueError(message)
-    if 'current_date' and 'homeworks' not in response:
+        raise KeyError(message)
+    if 'homeworks' not in response:
         message = 'Не найдено верных ключей'
         logging.error(message)
-        raise ValueError(message)
+        raise KeyError(message)
     homework = response.get('homeworks')
     return homework
 
@@ -88,7 +94,7 @@ def parse_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
-        message = 'Не верный статус домашней работы'
+        message = f'Не верный статус домашней работы {homework_status}'
         logging.error(message)
         raise KeyError(message)
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -97,8 +103,17 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-    return tokens
+    tokens = [
+        PRACTICUM_TOKEN,
+        TELEGRAM_TOKEN,
+        TELEGRAM_CHAT_ID
+    ]
+
+    for token in tokens:
+        if token is None:
+            logging.critical(f'Отсутствует переменная окружения {token}.')
+            return False
+    return True
 
 
 def main():
@@ -106,26 +121,18 @@ def main():
     load_dotenv()
     global logger
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename='program.log',
-        filemode='a'
-    )
+    logging.basicConfig()
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
     )
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    handler = RotatingFileHandler(
-        'my_logger.log',
-        maxBytes=50000000,
-        backupCount=5
-    )
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     if not check_tokens():
-        message = 'Отсутствует обязательная переменная окружения'
+        message = f'Отсутствует обязательная переменная окружения'
         logger.critical(message)
         raise ValueError(message)
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
