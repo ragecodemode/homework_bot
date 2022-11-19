@@ -70,8 +70,10 @@ def get_api_answer(current_timestamp: int) -> int:
 def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response['homeworks'], list):
-        response_type = type(homework)
-        message = f'Неккоректное значение в ответе у домашней работы {response_type}'
+        message = (
+            f'Неккоректное значение в ответе у домашней работы {type(response)},' 
+            f'ожидали: {list(response)}'
+        )
         logging.info(message)
         raise ValueError(message)
     if type(response) != dict:
