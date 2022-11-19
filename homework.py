@@ -7,8 +7,6 @@ import telegram
 import requests
 from dotenv import load_dotenv
 
-from logging.handlers import RotatingFileHandler
-
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -132,7 +130,7 @@ def main():
     logger.addHandler(handler)
 
     if not check_tokens():
-        message = f'Отсутствует обязательная переменная окружения'
+        message = 'Отсутствует обязательная переменная окружения'
         logger.critical(message)
         raise ValueError(message)
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
