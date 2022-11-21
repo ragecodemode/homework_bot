@@ -104,7 +104,7 @@ def check_tokens():
             logging.critical(
                 f'Отсутствует переменная окружения {tokens.get(token)}.'
             )
-            return all_tokens == False
+            all_tokens = False
         else:
             logging.info(
                 f'Переменная окружения есть {tokens.get(token)}.'
