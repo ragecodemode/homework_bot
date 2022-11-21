@@ -80,8 +80,10 @@ def parse_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
-        message = (f'Не верный статус домашней работы {homework_status}'
-        'Доступыне: approved, reviewing, rejected')
+        message = (
+            f'Не верный статус домашней работы {homework_status}'
+            'Доступыне: approved, reviewing, rejected'
+        )
         logging.error(message)
         raise KeyError(message)
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -99,10 +101,14 @@ def check_tokens():
 
     for token in tokens:
         if token is None:
-            logging.critical(f'Отсутствует переменная окружения {tokens.get(token)}.')
+            logging.critical(
+                f'Отсутствует переменная окружения {tokens.get(token)}.'
+            )
             return all_tokens == False
         else:
-            logging.info(f'Переменная окружения есть {tokens.get(token)}.')
+            logging.info(
+                f'Переменная окружения есть {tokens.get(token)}.'
+            )
     return all_tokens
 
 
@@ -112,7 +118,10 @@ def main():
     global logger
 
     logging.basicConfig(
-        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
+        level=logging.DEBUG,
+        format=(
+            '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
+        )
     )
     logger = logging.getLogger(__name__)
 
@@ -124,6 +133,7 @@ def main():
     send_message(bot, 'Бот начал работу')
     current_timestamp = int(time.time())
     previous_status = None
+    last_error = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -138,7 +148,6 @@ def main():
                         send_message(bot, message)
                 else:
                     logging.debug('Нет новых статусов')
-                last_error = ''
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if str(error) != str(last_error):
