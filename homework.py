@@ -66,11 +66,11 @@ def check_response(response):
             f'ожидали: {list(response)}'
         )
         logging.info(message)
-        raise ValueError(message)
+        raise TypeError(message)
     if 'homeworks' not in response:
         message = f'Не найден верный ключ homeworks {response["homeworks"]}'
         logging.error(message)
-        raise KeyError(message)
+        raise ValueError(message)
     homework = response.get('homeworks')
     return homework
 
@@ -79,6 +79,10 @@ def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
+    try:
+        homework_name = homework.get('homework_name')
+    except KeyError:
+        logging.error('Отсутствует ожидаемый ключ')
     if homework_status not in HOMEWORK_STATUSES:
         message = (
             f'Не верный статус домашней работы {homework_status}'
