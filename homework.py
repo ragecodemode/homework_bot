@@ -81,8 +81,10 @@ def parse_status(homework):
     homework_status = homework.get('status')
     try:
         homework_name = homework.get('homework_name')
-    except KeyError:
-        logging.error('Отсутствует ожидаемый ключ')
+    except Exception as error:
+        message = f'Осутсвуют ожидаемые ключи: {error}'
+        logging.error(message)
+        raise KeyError(message)
     if homework_status not in HOMEWORK_STATUSES:
         message = (
             f'Не верный статус домашней работы {homework_status}'
