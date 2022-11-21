@@ -46,23 +46,16 @@ def get_api_answer(current_timestamp: int) -> int:
             headers=HEADERS,
             params=params
         )
-    except requests.exceptions.RequestException as error:
-        message = f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}'
-        logger.error(message)
-        raise ValueError(message)
-    if homework.status_code != HTTPStatus.OK:
-        logger.error(
-            f'код ошибки: {homework.status_code}'
-            f'заголовок: {HEADERS}, параметр {params}'
-        )
-        raise ValueError(f'Сервер {ENDPOINT} недоступен.')
-    try:
-        homework_json = homework.json()
+        if homework.status_code != HTTPStatus.OK:
+            logger.error(
+                f'код ошибки: {homework.status_code}'
+                f'заголовок: {HEADERS}, параметр {params}'
+            )
+            raise ValueError(f'Ендпоинт {ENDPOINT} недоступен.')
+        return homework.json()
     except Exception as error:
-        message = f'Сбой при переводе в формат json: {error}'
-        logger.error(message)
-        raise ValueError(message)
-    return homework_json
+        message = f'Сбой при запросе к серверу {ENDPOINT}: {error}'
+        raise ConnectionAbortedError(message)
 
 
 def check_response(response):
@@ -74,13 +67,8 @@ def check_response(response):
         )
         logging.info(message)
         raise ValueError(message)
-    if type(response) != dict:
-        response_type = type(response)
-        message = f'Ответ пришёл в неверном формате: {response_type}'
-        logger.error(message)
-        raise KeyError(message)
     if 'homeworks' not in response:
-        message = 'Не найдено верных ключей'
+        message = f'Не найден верный ключ homeworks {response["homeworks"]}'
         logging.error(message)
         raise KeyError(message)
     homework = response.get('homeworks')
@@ -92,7 +80,8 @@ def parse_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
-        message = f'Не верный статус домашней работы {homework_status}'
+        message = (f'Не верный статус домашней работы {homework_status}'
+        'Доступыне: approved, reviewing, rejected')
         logging.error(message)
         raise KeyError(message)
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -101,17 +90,20 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    tokens = [
-        PRACTICUM_TOKEN,
-        TELEGRAM_TOKEN,
-        TELEGRAM_CHAT_ID
-    ]
+    tokens = {
+        PRACTICUM_TOKEN: 'PRACTICUM_TOKEN',
+        TELEGRAM_TOKEN: 'TELEGRAM_TOKEN',
+        TELEGRAM_CHAT_ID: 'TELEGRAM_CHAT_ID'
+    }
+    all_tokens = True
 
     for token in tokens:
         if token is None:
-            logging.critical(f'Отсутствует переменная окружения {token}.')
-            return False
-    return True
+            logging.critical(f'Отсутствует переменная окружения {tokens.get(token)}.')
+            return all_tokens == False
+        else:
+            logging.info(f'Переменная окружения есть {tokens.get(token)}.')
+    return all_tokens
 
 
 def main():
@@ -119,15 +111,10 @@ def main():
     load_dotenv()
     global logger
 
-    logging.basicConfig()
-    formatter = logging.Formatter(
-        '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
+    logging.basicConfig(
+        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
     )
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
     if not check_tokens():
         message = 'Отсутствует обязательная переменная окружения'
@@ -136,6 +123,7 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     send_message(bot, 'Бот начал работу')
     current_timestamp = int(time.time())
+    previous_status = None
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -143,12 +131,20 @@ def main():
             for homworks in homework:
                 if homworks:
                     logging.info('Собщение об изменение статуса отправлена')
-                    send_message(bot, parse_status(homework[0]))
+                    hw_status = homework[0].get('status')
+                    if hw_status != previous_status:
+                        previous_status = hw_status
+                        message = parse_status(homework[0])
+                        send_message(bot, message)
                 else:
                     logging.debug('Нет новых статусов')
+                last_error = ''
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            logger.error(message)
+            if str(error) != str(last_error):
+                send_message(bot, message)
+                last_error = error
+                logger.error(message)
         finally:
             time.sleep(RETRY_TIME)
 
