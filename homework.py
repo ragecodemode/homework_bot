@@ -30,7 +30,7 @@ RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
-HOMEWORK_STATUSES = {
+HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -48,7 +48,7 @@ def send_message(bot, message: str) -> None:
     except Exception as error:
         logger.error(f'Сообщение {message} об ошибки: {error}')
     else:
-        logging.info(f'Собщение {message} было отправлено')
+        logging.debug(f'Собщение {message} было отправлено')
 
 def get_api_answer(current_timestamp: int) -> int:
     """Делает запрос к единственному эндпоинту API-сервиса."""
@@ -105,14 +105,14 @@ def parse_status(homework):
         raise KeyError(message)
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
-    if homework_status not in HOMEWORK_STATUSES:
+    if homework_status not in HOMEWORK_VERDICTS:
         message = (
             f'Не верный статус домашней работы {homework_status}'
             f'Доступыне: approved, reviewing, rejected'
         )
         logging.error(message)
         raise KeyError(message)
-    verdict = HOMEWORK_STATUSES.get(homework_status)
+    verdict = HOMEWORK_VERDICTS.get(homework_status)
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
