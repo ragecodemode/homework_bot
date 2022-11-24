@@ -47,7 +47,7 @@ def get_api_answer(current_timestamp: int) -> int:
     params = {'from_date': current_timestamp}
     try:
         homework = requests.get(
-            url=ENDPOINT, 
+            url=ENDPOINT,
             headers=HEADERS,
             params=params
         )
@@ -138,7 +138,7 @@ def main():
                         send_message(bot, message)
                     else:
                         raise ValueError(
-                            f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}'
+                            f'Сбой при запросе к эндпоинту {ENDPOINT}'
                         )
                 else:
                     logging.debug('Нет новых статусов')
@@ -155,7 +155,6 @@ def main():
             time.sleep(RETRY_PERIOD)
 
 logger = logging.getLogger(__name__)
-
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
