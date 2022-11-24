@@ -27,6 +27,7 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
     logging.info('Отправка сообщения в телеграмм чат')
@@ -44,18 +45,18 @@ def send_message(bot, message: str) -> None:
 def get_api_answer(current_timestamp: int) -> int:
     """Делает запрос к единственному эндпоинту API-сервиса."""
     params = {'from_date': current_timestamp}
-    try: 
-        homework = requests.get( 
+    try:
+        homework = requests.get(
             url=ENDPOINT, 
-            headers=HEADERS, 
-            params=params 
+            headers=HEADERS,
+            params=params
         )
     except Exception as error:
         logger.error(f'Сбой при запросе к эндпоинту: {error}')
         raise KeyError(f'{ENDPOINT} недоступен.')
     if homework.status_code != HTTPStatus.OK:
         logger.error(f'Эндпоинт {ENDPOINT} недоступен.')
-        raise ValueError(f'Сервер {ENDPOINT} недоступен.') 
+        raise ValueError(f'Сервер {ENDPOINT} недоступен.')
     return homework.json()
 
 
@@ -136,7 +137,9 @@ def main():
                         message = parse_status(homework[0])
                         send_message(bot, message)
                     else:
-                        raise ValueError(f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}')
+                        raise ValueError(
+                            f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}'
+                        )
                 else:
                     logging.debug('Нет новых статусов')
         except Exception as error:
@@ -152,6 +155,8 @@ def main():
             time.sleep(RETRY_PERIOD)
 
 logger = logging.getLogger(__name__)
+
+
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
