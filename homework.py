@@ -154,6 +154,7 @@ def main():
         finally:
             time.sleep(RETRY_PERIOD)
 
+
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
