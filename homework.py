@@ -1,7 +1,9 @@
 import logging
 import os
 import time
+
 from http import HTTPStatus
+from sys import stdout
 
 import telegram
 import requests
@@ -10,17 +12,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='error.log',
-    format=(
-        '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
-    )
-)
-logger = logging.getLogger(__name__)
-logger.addHandler(
-    logging.StreamHandler()
-)
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -35,7 +26,6 @@ HOMEWORK_VERDICTS = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
-
 
 def send_message(bot, message: str) -> None:
     """отправляет сообщение в Telegram чат."""
@@ -54,56 +44,39 @@ def send_message(bot, message: str) -> None:
 def get_api_answer(current_timestamp: int) -> int:
     """Делает запрос к единственному эндпоинту API-сервиса."""
     params = {'from_date': current_timestamp}
-    try:
-        homework = requests.get(
-            url=ENDPOINT,
-            headers=HEADERS,
-            params=params
+    try: 
+        homework = requests.get( 
+            url=ENDPOINT, 
+            headers=HEADERS, 
+            params=params 
         )
-        if homework.status_code != HTTPStatus.OK:
-            logger.error(
-                f'код ошибки: {homework.status_code}'
-                f'заголовок: {HEADERS}, параметр {params}'
-            )
-            raise ValueError(f'Ендпоинт {ENDPOINT} недоступен.')
-        return homework.json()
     except Exception as error:
-        message = f'Сбой при запросе к серверу {ENDPOINT}: {error}'
-        raise ConnectionAbortedError(message)
+        logger.error(f'Сбой при запросе к эндпоинту: {error}')
+        raise KeyError(f'{ENDPOINT} недоступен.')
+    if homework.status_code != HTTPStatus.OK:
+        logger.error(f'Эндпоинт {ENDPOINT} недоступен.')
+        raise ValueError(f'Сервер {ENDPOINT} недоступен.') 
+    return homework.json()
 
 
 def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response, dict):
+        logger.error(f'Не верный тип данных {type(response)}')
         raise TypeError('Ответ API отличен от словаря')
     if 'current_date' and 'homeworks' not in response:
-        message = 'В ответе отсутствуют необходимые ключи'
-        logger.error(message)
-        raise ValueError(message)
-    if not isinstance(response["homeworks"], list):
-        message = (
-            f'Неккоректное значение в ответе домашней работы {type(response)}'
-            f'ожидали: {list(response)}'
-        )
-        logger.error(message)
-        raise TypeError(message)
+        raise KeyError
     homework = response.get('homeworks')
     if not isinstance(response["homeworks"], list):
-        message = (
-            f'Неккоректное значение в ответе домашней работы {type(response)}'
-            f'ожидали: {list(response)}'
-        )
-        logger.error(message)
-        raise TypeError(message)
+        logger.error('Неккоректное значение в ответе домашней работы')
+        raise TypeError
     return homework
 
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-    if homework.get('homework_name') is None:
-        message = 'Отсутствует имя домашней работы'
-        logger.error(message)
-        raise KeyError(message)
+    if 'homework_name' not in homework:
+        raise KeyError('Не найдено имя домашней работы')
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
@@ -129,12 +102,12 @@ def check_tokens():
     for token in tokens:
         if token is None:
             logging.critical(
-                f'Отсутствует переменная окружения {tokens.get(token)}.'
+                f'Отсутствует переменная окружения {tokens.get(token)}'
             )
             all_tokens = False
         else:
             logging.info(
-                f'Переменная окружения есть {tokens.get(token)}.'
+                f'Переменная окружения есть {tokens.get(token)}'
             )
     return all_tokens
 
@@ -162,10 +135,15 @@ def main():
                         previous_status = hw_status
                         message = parse_status(homework[0])
                         send_message(bot, message)
+                    else:
+                        raise ValueError(f'Сбой при запросе к эндпоинту {ENDPOINT}: {error}')
                 else:
                     logging.debug('Нет новых статусов')
         except Exception as error:
-            message = f'Сбой в работе программы: {error}'
+            message = (
+                f'Сбой в работе программы: {error},'
+                f'Ошибка эдпоинта: {ENDPOINT},'
+            )
             if str(error) != str(last_error):
                 send_message(bot, message)
                 last_error = error
@@ -173,6 +151,13 @@ def main():
         finally:
             time.sleep(RETRY_PERIOD)
 
-
+logger = logging.getLogger(__name__)
 if __name__ == '__main__':
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
+    )
+    handler = logging.StreamHandler(stream=stdout)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
     main()
