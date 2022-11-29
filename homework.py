@@ -54,7 +54,7 @@ def get_api_answer(current_timestamp: int) -> int:
         raise ConnectionError(f'Ошибка:{error}, {ENDPOINT} недоступен.')
     if homework.status_code != HTTPStatus.OK:
         raise ValueError(
-            f'Ожидали: {homework.status_code.HTTPStatus.OK},' 
+            f'Ожидали: {homework.status_code.HTTPStatus.OK},'
             f'пришёл: {homework.status_code}'
         )
     return homework.json()
@@ -160,9 +160,7 @@ if __name__ == '__main__':
         )
     )
     handler = logging.FileHandler(
-        os.path.join(
-            os.path.dirname(__file__), 'main.log'
-        ),
+        os.path.join(os.path.dirname(__file__), 'main.log'),
         mode='a'
     )
     logging.StreamHandler(stream=stdout)
