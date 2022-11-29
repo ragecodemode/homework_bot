@@ -54,7 +54,8 @@ def get_api_answer(current_timestamp: int) -> int:
         raise ConnectionError(f'Ошибка:{error}, {ENDPOINT} недоступен.')
     if homework.status_code != HTTPStatus.OK:
         raise ValueError(
-            f'Ожидали: {homework.status_code.HTTPStatus.OK}, пришёл: {homework.status_code}'
+            f'Ожидали: {homework.status_code.HTTPStatus.OK},' 
+            f'пришёл: {homework.status_code}'
         )
     return homework.json()
 
@@ -63,14 +64,16 @@ def check_response(response):
     """Проверяет ответ API на корректность."""
     if not isinstance(response, dict):
         raise TypeError(
-            f'Ответ API отличен от словаря, в ответ пришёл не верный тип данных: {type(response)}'
+            'Ответ API отличен от словаря,'
+            f'в ответ пришёл не верный тип данных: {type(response)}'
         )
     if 'current_date' and 'homeworks' not in response:
         raise KeyError('Не хватает нужных ключей: current_date и homeworks')
     homework = response["homeworks"]
     if not isinstance(homework, list):
         raise TypeError(
-            f'Ответ API отличен от словаря, в ответ пришёл не верный тип данных: {type(homework)}'
+            'Ответ API отличен от словаря,'
+            f'в ответ пришёл не верный тип данных: {type(homework)}'
         )
     return homework
 
@@ -157,7 +160,9 @@ if __name__ == '__main__':
         )
     )
     handler = logging.FileHandler(
-        os.path.join(os.path.dirname(__file__), 'main.log'),
+        os.path.join(
+            os.path.dirname(__file__), 'main.log'
+        ),
         mode='a'
     )
     logging.StreamHandler(stream=stdout)
