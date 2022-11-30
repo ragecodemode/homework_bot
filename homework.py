@@ -89,7 +89,7 @@ def parse_status(homework):
             f'Не верный статус домашней работы {homework_status}'
             f'Доступыне: {HOMEWORK_VERDICTS}'
         )
-    verdict = HOMEWORK_VERDICTS.get(homework_status)
+    verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
@@ -105,12 +105,12 @@ def check_tokens():
     for key, value in tokens.items():
         if value is None:
             logging.critical(
-                f'Отсутствует переменная окружения {tokens.get(key)}'
+                f'Отсутствует переменная окружения {key}'
             )
             all_tokens = False
         else:
             logging.info(
-                f'Переменная окружения есть {tokens.get(key)}'
+                f'Переменная окружения есть {key}'
             )
     return all_tokens
 
@@ -139,21 +139,19 @@ def main():
                         message = parse_status(homework[0])
                         send_message(bot, message)
                     logging.debug('Нет новых статусов')
-                    current_timestamp = int(time.time())
+                    current_timestamp = response.get('current_date')
         except Exception as error:
+            logger.error(f'Сбой в работе программы: {error}')
             if str(error) != str(last_error):
                 send_message(bot, message)
                 last_error = error
-                logger.error(
-                    f'Сбой в работе программы: {error},'
-                    f'Ошибка эдпоинта: {ENDPOINT},'
-                )
         finally:
             time.sleep(RETRY_PERIOD)
 
 
 if __name__ == '__main__':
     logging.basicConfig(
+        handlers=[logging.StreamHandler(stream=stdout)],
         level=logging.DEBUG,
         format=(
             '%(asctime)s, %(levelname)s, %(message)s, %(name)s, %(funcName)s'
@@ -163,6 +161,5 @@ if __name__ == '__main__':
         os.path.join(os.path.dirname(__file__), 'main.log'),
         mode='a'
     )
-    logging.StreamHandler(stream=stdout)
     logger.addHandler(handler)
     main()
