@@ -141,7 +141,8 @@ def main():
                     logging.debug('Нет новых статусов')
                     current_timestamp = response.get('current_date')
         except Exception as error:
-            logger.error(f'Сбой в работе программы: {error}')
+            logging.critical(f'Сбой отправки сообщения: {error}')
+            message = f'Сбой в работе программы: {error}'
             if str(error) != str(last_error):
                 send_message(bot, message)
                 last_error = error
